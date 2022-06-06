@@ -6,10 +6,10 @@ The project code lives on GitHub (`msbentsen/plotannot <https://github.com/msben
 
 Please submit any issues to the `github issues page <https://github.com/msbentsen/plotannot/issues>`_.
 
-Contents
+Module API
 --------------------------------
 
-.. toctree::
-   :maxdepth: 1
-
-   API
+.. automodule:: plotannot.functions
+   :members:
+   :undoc-members:
+   :show-inheritance:
