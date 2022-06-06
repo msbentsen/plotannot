@@ -1,3 +1,13 @@
+#!/usr/bin/env python
+
+"""
+PlotInfo class for plotannot
+
+@author: Mette Bentsen
+@contact: mette.bentsen (at) mpi-bn.mpg.de
+@license: MIT
+"""
+
 import sys
 import numpy as np
 import matplotlib
@@ -85,17 +95,17 @@ class PlotInfo():
 			self.xaxis = o.xaxis
 			self.yaxis = o.yaxis
 
-		#For plt.imshow; get from _axes
+		#For plt plots; get from _axes
 		elif hasattr(o, "_axes"):
 			self.ax = o._axes
-			self.xaxis = o.xaxis
-			self.yaxis = o.yaxis
+			self.xaxis = self.ax.xaxis
+			self.yaxis = self.ax.yaxis
 		
 		#for sns.clustermap; get from heatmap axes
 		elif hasattr(o, "ax_heatmap"):
 			self.ax = o.ax_heatmap
-			self.xaxis = o.ax_heatmap.xaxis
-			self.yaxis = o.ax_heatmap.yaxis
+			self.xaxis = self.ax.xaxis
+			self.yaxis = self.ax.yaxis
 
 		#Todo: search for xaxis/yaxis in dict
 		else:
@@ -137,6 +147,59 @@ class PlotInfo():
 		if axis not in valid:
 			raise ValueError(f"Given axis '{axis}' is not valid. Possible axis are: {valid}")
 
+	@staticmethod
+	def check_value(value, vmin=-np.inf, vmax=np.inf, integer=False, name=None):
+		""" Check that value is valid based on vmin/vmax"""
+
+		if vmin > vmax:
+			raise ValueError("vmin must be smaller than vmax")
+
+		error_msg = None
+		if integer == True:
+			if not isinstance(value, int):
+				error_msg = "The {0} given ({1}) is not an integer, but integer is set to True.".format(name, value)
+		else:
+			#check if value is any value
+			try:
+				_ = int(value)
+			except:
+				error_msg = "The {0} given ({1}) is not a valid number".format(name, value)
+
+		#If value is a number, check if it is within bounds
+		if error_msg is None:
+			if not ((value >= vmin) & (value <= vmax)):
+				error_msg = "The {0} given ({1}) is not within the bounds of [{2};{3}]".format(name, value, vmin, vmax)
+		
+		#Finally, raise error if necessary:
+		if error_msg is not None:
+			raise ValueError(error_msg)
+
+
+	def check_labels(self, axis, labels):
+		""" Check whether given labels are valid for axis """
+
+		self.check_axis(axis)
+		axis = self.format_axis(axis)
+
+		for a in axis:
+			all_label_texts = [d["object"]._text for d in self.label_info[a]] #all label texts found
+
+			not_found = set(labels) - set(all_label_texts)
+
+			#If there are no visible labels at all; pass
+			if len(all_label_texts) == 0:
+				pass
+			
+			#If no matches were found
+			elif len(not_found) == len(labels):
+				self.logger.warning(f"No match could be found between given 'labels' and the {a}-axis ticklabels.")
+				self.logger.warning(f"Axis ticklabels are: {all_label_texts[:5]} (...). Given labels are: {labels[:5]}.")
+				self.logger.warning("Please check input labels and axis.")
+				raise ValueError("No match between given labels and axis ticklabels")
+
+			#If only some matches were found
+			elif len(not_found) > 0:
+				self.logger.warning(f"{len(not_found)} string(s) from 'labels' were not found in axis ticklabels. These labels were: {list(not_found)}")
 
 	#---------------- Get information of the axes and labels in the plot ----------------#
 
@@ -248,8 +311,12 @@ class PlotInfo():
 			List of labels to keep.
 		"""
 
-		axis = self.format_axis(axis)
 		labels = [str(label) for label in labels] #convert labels to strings
+
+		self.check_axis(axis)
+		self.check_labels(axis, labels)
+
+		axis = self.format_axis(axis)
 
 		#Subset for each axis separately
 		found = []
@@ -264,21 +331,12 @@ class PlotInfo():
 
 		self.remove_invisible_labels()
 
-		not_found = set(labels) - set(found)
-		if len(not_found) > 0:
-			self.logger.warning(f"{not_found}")
-
-	def format_ticklabels(self, axis, labels=None):
-
-		#Collect objects to apply formatting to
-		pass
-
 
  	#-----------------------------------------------------------------------------------#
 	#----------------- Functionality for shifting and annotating labels ----------------#
 	#-----------------------------------------------------------------------------------#
 
-	def extend_axis(self, axis, expand_axes=0):
+	def extend_axis(self, axis, expand_axis=0):
 		"""
 		Extend the size of axis to make room for labels.
 
@@ -286,20 +344,22 @@ class PlotInfo():
 		-------------
 		axis : str
 			Name of axis. One of: "xaxis", "yaxis", "top", "bottom", "left", "right".
-		expand_axes : float or tuple
+		expand_axis : float or tuple
 			Expand the axis by this amount. Corresponds to the relative size of axes to expand with, e.g. 0.1 extends with 5% of the axis size in
 			both directions. Default: 0.
 		"""
 		
-		if isinstance(expand_axes, (int, float)):
-			expand_axes = (expand_axes/2, expand_axes/2)
+		self.check_value(expand_axis, name="expand_axis")
+
+		if isinstance(expand_axis, (int, float)):
+			expand_axis = (expand_axis/2, expand_axis/2)
 
 		axis = self.format_axis(axis)
 		
 		#Adjust axis
 		for a in axis:
-			self.axis_info[a]["from_inch"] -= self.axis_info[a]["extent_inch"] * expand_axes[0] 	#lower
-			self.axis_info[a]["to_inch"] += self.axis_info[a]["extent_inch"] * expand_axes[1] 		#higher
+			self.axis_info[a]["from_inch"] -= self.axis_info[a]["extent_inch"] * expand_axis[0] 	#lower
+			self.axis_info[a]["to_inch"] += self.axis_info[a]["extent_inch"] * expand_axis[1] 		#higher
 			self.axis_info[a]["extent_inch"] = self.axis_info[a]["to_inch"] - self.axis_info[a]["from_inch"]
 
 
@@ -400,19 +460,19 @@ class PlotInfo():
 		
 		return matrix
 
-	def move_elements(self, current_pos_arr, target_pos_arr, extent_matrix, speed=0.2):
+	def move_elements(self, current_pos_arr, target_pos_arr, extent_matrix, speed=0.1):
 		""" Move elements from their current position closer to their target position, given that they must not overlap.
 		
 		Parameters
 		-------------
 		current_pos_arr : array
-			Current positions of elements
+			Current positions of elements.
 		target_pos_arr : array
-			Target positions of elements
+			Target positions of elements.
 		extent_matrix : matrix
-			Matrix containing the extent of each element
-		speed : float
-			The speed with which the elements move to their target position. Default: 0.2
+			Matrix containing the extent of each element.
+		speed : integer
+			The speed with which the elements move to their target position. Default: 0.1.
 		"""
 
 		#Initialize counts
@@ -420,6 +480,9 @@ class PlotInfo():
 		iteration_count = 0
 		n = len(current_pos_arr) #number of elements
 		resolution = extent_matrix.shape[1]
+
+		speed = max(int(speed * resolution), 1) #make sure that speed is at least 1
+		self.logger.debug(f"speed is {speed} (resolution: {resolution})")
 
 		#Shift elements until all elements fail to move
 		while failed_count < n:
@@ -451,7 +514,8 @@ class PlotInfo():
 						left_label_pos = current_pos_arr[i-1] #position of the label to the left
 						arr = extent_matrix[[i,i-1], :].sum(axis=0)
 						possible_shift = sum(arr[left_label_pos:this_label_pos] == 0) #space between left and current label
-						
+						self.logger.spam(f"Possible shift without overlap is {possible_shift}")
+
 						shift = min(possible_shift, np.abs(this_diff))
 						shift = min(shift, int(np.ceil(shift * speed))) #cap shift at speed
 						shift = -1 * shift #shift to the left (-)
@@ -469,7 +533,6 @@ class PlotInfo():
 						possible_shift = sum(arr[this_label_pos:right_label_pos] == 0)
 						shift = min(possible_shift, np.abs(this_diff)) #shift to the right (+)
 						shift = min(shift, int(np.ceil(shift * speed))) #cap shift at speed
-						
 					
 				self.logger.spam(f"Trying to shift label by {shift}")
 				
@@ -500,36 +563,44 @@ class PlotInfo():
 		return current_pos_arr
 
 
-	def shift_integer_labels(self, axis, resolution=1000, rel_label_size=1.1, speed=5):
-		""" Shift labels to not be overlapping 
+	def shift_integer_labels(self, axis, resolution=1000, rel_label_size=1.1, speed=0.1):
+		""" Shift labels to not be overlapping .
 		
 		Parameters
 		-------------
 		axis : str or list
-
+			Name of axis. 
 		resolution : int, optional
-
-		rel_label_size : int, optional
-			Relative size of labels. Default: 1. 
-
+			Number of bins in axis. Default: 1000.
+		rel_label_size : float, optional
+			Relative size of labels. Default: 1.1. 
+		speed : float, optional
+			The speed with which labels move. Default: 0.1.
 		"""
 		
+		self.check_axis(axis)
+		self.check_value(resolution, vmin=1, integer=True, name="resolution")
+		self.check_value(rel_label_size, vmin=0, name="rel_label_size")
+		self.check_value(speed, vmin=0, vmax=1, name="speed")
 
 		self.get_integer_positions() #get integer arrays for labels
 		
 		axis = self.format_axis(axis)
 		
-		
 		#Shift labels across axis
 		for a in axis:
+			
+			if len(self.label_info[a]) == 0:
+				continue #no labels to shift for axis
+
 			self.logger.debug("Shifting integer labels on axis: {0}".format(a))
-			self.logger.spam("Initial text positions: {0}".format(self.integer_positions[a]["text_pos_int_arr"][:10]))
+			self.logger.spam("Initial text positions: {0} (...)".format(self.integer_positions[a]["text_pos_int_arr"][:10]))
 
 			#Start by distributing labels across whole axis
 			n = len(self.integer_positions[a]["text_pos_int_arr"])
 			new_text_positions = np.linspace(0, resolution, n).astype(int)
 			self.integer_positions[a]["text_pos_int_arr"] = new_text_positions #update positions array
-			self.logger.spam(f"Initial distribution of labels across axis. New positions are: {new_text_positions[:10]}")
+			self.logger.spam(f"Initial distribution of labels across axis. New positions are: {new_text_positions[:10]} (...)")
 			self.get_extent_matrix(resolution=resolution, rel_label_size=rel_label_size) #update label extent after shifting
 			
 
@@ -548,7 +619,7 @@ class PlotInfo():
 				resolution = extent_matrix.shape[1]
 				
 				needed_extend = space_needed / resolution - 1
-				self.logger.warning(f"Set 'expand_axes' to at least {needed_extend:.2f} in order to fit labels into the range.")
+				self.logger.warning(f"Set 'expand_axis' to at least {needed_extend:.2f} in order to fit labels into the range.")
 
 
 			##### shift until no longer possible
@@ -578,9 +649,14 @@ class PlotInfo():
 			The amount label shift perpendicular to axis. Default: 5.
 		"""
 
+		#Check input
+		self.check_value(perp_shift, vmin=0, name="perp_shift")
 		axis = self.format_axis(axis)
 
 		for a in axis:
+
+			if len(self.label_info[a]) == 0:
+				continue #no labels to shift for axis
 
 			self.logger.debug(f"Applying shift for axis: {a}")
 
@@ -630,6 +706,7 @@ class PlotInfo():
 	def plot_annotation_lines(self, axis, rel_tick_size=0.25):
 		""" Plot lines from the original ticks to the newly shifted labels on the plot. """
 
+		self.check_value(rel_tick_size, vmin=0, vmax=1, name="rel_tick_size")
 		axis = self.format_axis(axis)
 
 		for a in axis:
@@ -669,10 +746,18 @@ class PlotInfo():
 				tick_lw = self.tick_info[a][i]["object"].get_markeredgewidth()
 				color = self.tick_info[a][i]["object"].get_color() #carry over existing color of tick
 				
+				#Get axes limits before plotting
+				orig_xlim = self.ax.get_xlim()
+				orig_ylim = self.ax.get_ylim()
+
 				if a in ["top", "bottom"]:
 					self.ax.plot(para_coord, perp_coord, clip_on=False, lw=tick_lw, color=color) #plot from inches coordinates
 				else:
 					self.ax.plot(perp_coord, para_coord, clip_on=False, lw=tick_lw, color=color) #plot from inches coordinates
+
+				#Set axes limit in case they were changed by plotting
+				self.ax.set_xlim(orig_xlim)
+				self.ax.set_ylim(orig_ylim)
 
 				#Hide original tick
 				self.tick_info[a][i]["object"].set_visible(False)
