@@ -53,8 +53,7 @@ Additional examples are found in the [examples notebook](examples/examples.ipynb
 
 ## Documentation and help
 
-Documentation of the main functions are found at: 
-
+Documentation of the main functions are found at: [plotannot.readthedocs.io](https://plotannot.readthedocs.io/en/latest/). Examples of how to use these are in the examples notebook here: [examples/examples.ipynb](examples/examples.ipynb). 
 
 Issues and PRs are very welcome - please use the [repository issues](https://github.com/msbentsen/plotannot/issues) to raise an issue/contribute.
 
