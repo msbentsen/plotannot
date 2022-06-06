@@ -7,6 +7,7 @@
 
 import sys
 import numpy as np
+import math
 import matplotlib
 import matplotlib.transforms
 import matplotlib.pyplot as plt
@@ -145,7 +146,7 @@ class PlotInfo():
 			raise ValueError(f"Given axis '{axis}' is not valid. Possible axis are: {valid}")
 
 	@staticmethod
-	def check_value(value, vmin=-np.inf, vmax=np.inf, integer=False, name=None):
+	def check_value(value, vmin=-math.inf, vmax=math.inf, integer=False, name=None):
 		""" Check that value is valid based on vmin/vmax"""
 
 		if vmin > vmax:
