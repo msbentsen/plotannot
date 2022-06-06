@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
-"""
-PlotInfo class for plotannot
-
-@author: Mette Bentsen
-@contact: mette.bentsen (at) mpi-bn.mpg.de
-@license: MIT
-"""
+#PlotInfo class for plotannot
+#@author: Mette Bentsen
+#@contact: mette.bentsen (at) mpi-bn.mpg.de
+#@license: MIT
 
 import sys
 import numpy as np

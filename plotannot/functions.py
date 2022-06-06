@@ -1,12 +1,10 @@
 #!/usr/bin/env python
 
-"""
-Functions for annotating and formatting ticklabels (using the class PlotInfo)
+#Functions for annotating and formatting ticklabels (using the class PlotInfo)
+#@author: Mette Bentsen
+#@contact: mette.bentsen (at) mpi-bn.mpg.de
+#@license: MIT
 
-@author: Mette Bentsen
-@contact: mette.bentsen (at) mpi-bn.mpg.de
-@license: MIT
-"""
 
 import plotannot.code
 
@@ -22,7 +20,7 @@ def annotate_ticks(ax, axis, labels,
 	"""
 	Annotate ticks with a subset of labels, and shift to overlapping labels.
 
-	Parameters:
+	Parameters
 	--------------
 	ax : matplotlib.axes.Axes
 		Axes object holding the plot and labels to annotate.
@@ -62,7 +60,7 @@ def format_ticklabels(ax, axis, labels=None, format_ticks=False, verbosity=1, **
 	"""
 	Format ticklabels of a given axis using attributes such as color, fontsize, fontweight, etc.
 
-	Parameters:
+	Parameters
 	--------------
 	ax : matplotlib.axes.Axes
 		Axes object holding the plot and labels to annotate.
@@ -75,7 +73,7 @@ def format_ticklabels(ax, axis, labels=None, format_ticks=False, verbosity=1, **
 	verbosity : int, optional
 		The level of logging from the function.  An integer between 0 and 3, corresponding to: 0: only errors, 1: minimal, 2: debug, 3: spam debug. Default: 1.
 	kwargs : args, optional
-		Additional keyword arguments containing the attributes to set for labels. Each attribute is used as a function "set_" + attribute for the label,
+		Additional keyword arguments containing the attributes to set for labels. Each attribute is used as a function "set\_" + attribute for the label,
 		e.g. "color='red'" will set the color of the label to red using the label-function 'set_color'.
 	"""
 
