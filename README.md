@@ -35,6 +35,7 @@ Requirements for package:
 
 ```
 #Plot heatmap
+table = pd.DataFrame(np.random.random((100,50)))
 ax = sns.heatmap(table, xticklabels=True, yticklabels=False)
 
 #Rotate all labels
