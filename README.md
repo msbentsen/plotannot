@@ -34,6 +34,10 @@ Requirements for package:
 ## Simple example
 
 ```
+import pandas as pd
+import seaborn as sns
+import plotannot
+
 #Plot heatmap
 table = pd.DataFrame(np.random.random((100,50)))
 ax = sns.heatmap(table, xticklabels=True, yticklabels=False)
