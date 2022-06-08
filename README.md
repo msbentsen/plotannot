@@ -2,7 +2,7 @@
 [![PyPI Version](https://img.shields.io/pypi/v/plotannot.svg?style=plastic)](https://pypi.org/project/plotannot/)
 
 # Introduction
-_plotannot_ is a a python package to automatically highlight and adjust overlapping ticklabels in matplotlib/seaborn plots. It is written with great inspiration and appreciation the _statannot_ package ([webermarcolivier/statannot](https://github.com/webermarcolivier/statannot) - now maintained at [trevismd/statannotations](https://github.com/trevismd/statannotations)), as well as the _adjustText_ package ([Phlya/adjustText](https://github.com/Phlya/adjustText)).
+_plotannot_ is a a python package to automatically highlight and adjust overlapping ticklabels in matplotlib/seaborn plots. It is written with great inspiration and appreciation for the _statannot_ package ([webermarcolivier/statannot](https://github.com/webermarcolivier/statannot) - now maintained at [trevismd/statannotations](https://github.com/trevismd/statannotations)), as well as the _adjustText_ package ([Phlya/adjustText](https://github.com/Phlya/adjustText)).
 
 I originally created this package for myself, as I wanted to create ComplexHeatmap (R package) style annotations for Python plots - but maybe it is of use to you too? 
 
