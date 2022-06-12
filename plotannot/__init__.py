@@ -1,6 +1,6 @@
 from importlib import import_module
 
-__version__ = "0.1.0"
+from ._version import __version__
 
 #Set functions to be available directly, i.e. "from plotannot import annotate"
 module = import_module("plotannot.functions")
