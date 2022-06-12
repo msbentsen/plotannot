@@ -27,7 +27,8 @@ author = 'Mette Bentsen'
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.viewcode', 'sphinx.ext.autodoc', 'sphinx.ext.napoleon']
+extensions = ['sphinx.ext.viewcode', 'sphinx.ext.autodoc', 'sphinx.ext.napoleon',  
+              'nbsphinx', 'nbsphinx_link']
 
 napoleon_numpy_docstring = True
 
@@ -42,12 +43,33 @@ exclude_patterns = []
 autodoc_mock_imports = ['numpy', 'matplotlib']
 
 
+# -- Create nblink files  -------------------------------------------------
+
+import glob 
+import json
+
+#Remove all previous .nblink files
+links = glob.glob("examples/*.nblink")
+for l in links:
+    os.remove(l) 
+
+#Create nblinks for current notebooks
+notebooks = glob.glob("../../examples/*.ipynb")
+for f in notebooks:
+    f_name = os.path.basename(f).replace(".ipynb", "")
+
+    d = {"path": "../" + f} 
+    with open("examples/" + f_name + ".nblink", 'w') as fp:
+        json.dump(d, fp)
+
+nbsphinx_execute = 'never'
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'nature'
+html_theme = 'sphinx_rtd_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
