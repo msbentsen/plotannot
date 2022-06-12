@@ -581,7 +581,7 @@ class PlotInfo():
 		self.check_value(rel_label_size, vmin=0, name="rel_label_size")
 		self.check_value(speed, vmin=0, vmax=1, name="speed")
 
-		self.get_integer_positions() #get integer arrays for labels
+		self.get_integer_positions(resolution=resolution) #get integer arrays for labels
 		
 		axis = self.format_axis(axis)
 		
